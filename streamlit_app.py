@@ -3,6 +3,12 @@ import time
 from datetime import datetime
 import streamlit as st
 
+def correct_time(time_in):
+    time_struct_UTC = time.gmtime(time_in)
+    time_out = time.mktime(time_struct_UTC) + 8 * 60 * 60
+    timestamp = str(datetime.fromtimestamp(time_out))
+    return timestamp
+
 #---//Set the basic info//---
 st.title("弹幕宠物挂机脚本")
 custom_basic = st.checkbox("自定义基本设定", False)
@@ -48,7 +54,8 @@ num_step = st.text_input("升级所需内力", value = '17')
 if num_remain:
     secs_all = float(num_remain) / float(num_step) * 10
     time_finish = int(time.time()) + secs_all
-    st.write("估算可突破时间为" + str(datetime.fromtimestamp(time_finish)))
+    time_fin_show = correct_time(time_finish)
+    st.write("估算可突破时间为" + time_fin_show)
 
 #---//Send the request//---
 if is_start and id_room:
@@ -84,9 +91,8 @@ if is_start and id_room:
             response = requests.post(url, data = data, headers = headers)
             code_return = response.status_code
             if code_return == 200:
-                st.write(str(datetime.fromtimestamp(time_now)))
-                #secs_remain = time_finish - time_val
-                #print("Success! Remain minutes: " + str(secs_remain / 60))
+                time_show = correct_time(time_now)
+                st.write("发送成功" + time_show)
             else:
-                st.write(str(datetime.fromtimestamp(time_now)))
+                st.write("发送失败")
             time_last = time_now
