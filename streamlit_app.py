@@ -37,8 +37,8 @@ st.markdown("---")
 st.header("修炼信息")
 id_room = st.text_input("直播间号", value = '')
 txt = st.text_input("发送内容", value = '修炼')
+secs_step = float(st.text_input("发送间隔(s)", value = '600'))
 is_start = st.checkbox("开始修炼", False)
-secs_step = 60
 
 #---//Calculate remaining time//---
 st.markdown("---")
