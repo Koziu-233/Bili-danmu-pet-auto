@@ -9,8 +9,8 @@ def correct_time(time_in):
     timestamp = str(datetime.fromtimestamp(time_out))
     return timestamp
 
-def read_data(key):
-    with open('Data.txt', 'r') as file:
+def read_user_info(key):
+    with open('UserInfo.txt', 'r') as file:
         Lst_txt = file.readlines()
     csrf = ''
     csrf_token =''
@@ -24,9 +24,25 @@ def read_data(key):
             break
     return csrf, csrf_token, cookie
 
-def write_data(key, csrf, csrf_token, cookie):
+def write_user_info(key, csrf, csrf_token, cookie):
     txt_write = '//'.join([key, csrf, csrf_token, cookie])
-    print(txt_write)
+    with open('UserInfo.txt', 'w') as file:
+        file.write(txt_write)
+
+def read_data(key):
+    with open('Data.txt', 'r') as file:
+        Lst_txt = file.readlines()
+    status = ''
+    timestamp =''
+    for txt in Lst_txt:
+        Lst_data = txt.split(',')
+        if Lst_data[0] == key:
+            status = int(Lst_data[1])
+            timestamp = Lst_data[2]
+    return status, timestamp
+
+def write_data(key, status, timestamp):
+    txt_write = ','.join([key, str(status), timestamp])
     with open('Data.txt', 'w') as file:
         file.write(txt_write)
 
@@ -51,7 +67,7 @@ user_id = st.text_input("用户名", value = 'Koziu')
 is_search = st.checkbox("查询", False)
 if is_search:
     #---//Search the user info in data//---
-    [csrf_ini, csrf_token_ini, cookie_ini] = read_data(user_id)
+    [csrf_ini, csrf_token_ini, cookie_ini] = read_user_info(user_id)
     csrf = st.text_input("csrf", value = csrf_ini)
     csrf_token = st.text_input("csrf_token", value = csrf_token_ini)
     cookie = st.text_input("Cookie", value = cookie_ini)
@@ -64,7 +80,9 @@ if is_search:
     if request_update:
         is_update = st.button("确认更新（谨慎）")
         if is_update:
-            write_data(user_id, csrf, csrf_token, cookie)
+            write_user_info(user_id, csrf, csrf_token, cookie)
+else:
+    headers = None
 
 
 #---//Set the custom info//---
@@ -73,7 +91,14 @@ st.header("修炼信息")
 id_room = st.text_input("直播间号", value = '')
 txt = st.text_input("发送内容", value = '修炼')
 secs_step = float(st.text_input("发送间隔(s)", value = '600'))
-is_start = st.checkbox("开始修炼", False)
+[status_user, time_last] = read_data(user_id)
+if st.button("切换状态"):
+    status_user *= -1
+    write_data(user_id, status_user, time_last)
+if status_user == 1:
+    st.metric("当前状态", "修炼中", correct_time(int(time_last)))
+else:
+    st.metric("当前状态", "空闲中", correct_time(int(time_last)))
 
 #---//Calculate remaining time//---
 st.markdown("---")
@@ -87,13 +112,12 @@ if num_remain:
     st.write("估算可突破时间为" + time_fin_show)
 
 #---//Send the request//---
-if is_start and id_room:
-    time_last = None
-    while is_start:
+if id_room and headers:
+    while status_user == 1:
         is_send_real = False
         time_now = int(time.time())
         if time_last:
-            secs_passed = time_now - time_last
+            secs_passed = time_now - int(time_last)
             if secs_passed >= secs_step:
                 is_send_real = True
         else:
@@ -124,4 +148,5 @@ if is_start and id_room:
                 st.write("发送成功" + time_show)
             else:
                 st.write("发送失败")
-            time_last = time_now
+            time_last = str(time_now)
+            write_data(user_id, status_user, time_last)
