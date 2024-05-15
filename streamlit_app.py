@@ -9,34 +9,63 @@ def correct_time(time_in):
     timestamp = str(datetime.fromtimestamp(time_out))
     return timestamp
 
+def read_data(key):
+    with open('Data.txt', 'r') as file:
+        Lst_txt = file.readlines()
+    csrf = ''
+    csrf_token =''
+    cookie = ''
+    for txt in Lst_txt:
+        Lst_data = txt.split('//')
+        if Lst_data[0] == key:
+            csrf = Lst_data[1]
+            csrf_token = Lst_data[2]
+            cookie = Lst_data[3].replace('\n', '')
+            break
+    return csrf, csrf_token, cookie
+
+def write_data(key, csrf, csrf_token, cookie):
+    txt_write = '//'.join([key, csrf, csrf_token, cookie])
+    print(txt_write)
+    with open('Data.txt', 'w') as file:
+        file.write(txt_write)
+
 #---//Set the basic info//---
 st.title("弹幕宠物挂机脚本")
 custom_basic = st.checkbox("自定义基本设定", False)
 if custom_basic:
     url = st.text_input("B站API网址", value = 'https://api.live.bilibili.com/msg/send')
+    hd_origin = st.text_input("Origin", value = 'https://live.bilibili.com')
+    hd_priority = st.text_input("Priority", value = 'u=1, i')
+    hd_user_agent = st.text_input("User-Agent", value = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36')
 else:
     url = 'https://api.live.bilibili.com/msg/send'
+    hd_origin = 'https://live.bilibili.com'
+    hd_priority = 'u=1, i'
+    hd_user_agent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36'
 
 #---//Set the user info//---
 st.markdown("---")
 st.header("用户基本信息")
-csrf = st.text_input("csrf", value = 'b51b8ad084d831c3af20f4fc6b1c3a51')
-csrf_token = st.text_input("csrf_token", value = 'b51b8ad084d831c3af20f4fc6b1c3a51')
-cookie = st.text_input("Cookie", value = 'buvid3=EC72F8C4-ED97-73A1-59BB-203FDFBC330853369infoc; b_nut=1714394553; _uuid=31F6CEEC-B3A5-214E-16B7-8C104A2410A3CE49817infoc; buvid4=A72633C4-3F55-D30D-24C9-CA2C8AF166D554070-024042912-0X4ynfGMIH8tT1jBmQsVL9k5PnRi4lPacrD5VArjsCsQFU7KapjYSV1rIZMjg4ur; enable_web_push=DISABLE; rpdid=0zbfAHJtrd|voDS695l|1VJ|3w1S1qlx; DedeUserID=14180802; DedeUserID__ckMd5=31f1b9e161535495; header_theme_version=CLOSE; LIVE_BUVID=AUTO9917143987942530; hit-dyn-v2=1; CURRENT_QUALITY=120; fingerprint=8d3de7cc9f5fb6fbd4839664a54ec7cd; buvid_fp_plain=undefined; CURRENT_BLACKGAP=0; bp_video_offset_14180802=926939584176062535; CURRENT_FNVAL=4048; bili_ticket=eyJhbGciOiJIUzI1NiIsImtpZCI6InMwMyIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3MTU2OTg3NTgsImlhdCI6MTcxNTQzOTQ5OCwicGx0IjotMX0.cPcWdzQ-iC8A5-EO5yX1VZbez9PfgTYOvbqinEkBwqo; bili_ticket_expires=1715698698; buvid_fp=8d3de7cc9f5fb6fbd4839664a54ec7cd; SESSDATA=50bbfbc7%2C1730995989%2Cd208b%2A51CjDdYEqE-9DZrpt3N1XRqrGJ2pnD1EIMmLUp67YLQUA0LS_fKx0WWwj9KxAj_ECf6DASVkp4bVZlc2gzQUhXakQwUmM5QlhLSDU1RURsVVhtXzlaaEFydkxyWlkzY0duNUhFcjlrZTJMQ0dYajc4bXM2cXg4d056UzFqT0dwdXhiRXduRldWSkx3IIEC; bili_jct=b51b8ad084d831c3af20f4fc6b1c3a51; sid=827wyk7i; Hm_lvt_8a6e55dbd2870f0f5bc9194cddf32a02=1715360621,1715436942,1715447926,1715489769; home_feed_column=5; browser_resolution=2560-1305; bp_t_offset_14180802=930517863140163601; Hm_lpvt_8a6e55dbd2870f0f5bc9194cddf32a02=1715493502; PVID=1; b_lsid=10FCB28FB_18F6B7AA255; bsource=search_baidu')
+user_id = st.text_input("用户名", value = 'Koziu')
+is_search = st.checkbox("查询", False)
+if is_search:
+    #---//Search the user info in data//---
+    [csrf_ini, csrf_token_ini, cookie_ini] = read_data(user_id)
+    csrf = st.text_input("csrf", value = csrf_ini)
+    csrf_token = st.text_input("csrf_token", value = csrf_token_ini)
+    cookie = st.text_input("Cookie", value = cookie_ini)
 
-#---//Set the headers//---
-headers = {
-    'Cookie': cookie,
-    'Origin': 'https://live.bilibili.com',
-    'Priority': 'u=1, i',
-    'Sec-Ch-Ua': '"Chromium";v="124", "Google Chrome";v="124", "Not-A.Brand";v="99"',
-    'Sec-Ch-Ua-Mobile': '?0',
-    'Sec-Ch-Ua-Platform': 'Windows',
-    'Sec-Fetch-Dest': 'empty',
-    'Sec-Fetch-Mode': 'cors',
-    'Sec-Fetch-Site': 'same-site',
-    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36'
-}
+    #---//Set the headers//---
+    headers = {'Cookie': cookie, 'Origin': hd_origin, 'Priority': hd_priority, 'User-Agent': hd_user_agent}
+
+    #---//Update the new user info to data//---
+    request_update = st.checkbox("更新", False)
+    if request_update:
+        is_update = st.button("确认更新（谨慎）")
+        if is_update:
+            write_data(user_id, csrf, csrf_token, cookie)
+
 
 #---//Set the custom info//---
 st.markdown("---")
