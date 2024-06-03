@@ -47,7 +47,7 @@ def write_data(key, status, timestamp):
         file.write(txt_write)
 
 #---//Set the basic info//---
-st.title("弹幕宠物挂机脚本1")
+st.title("弹幕宠物挂机脚本")
 custom_basic = st.checkbox("自定义基本设定", False)
 if custom_basic:
     url = st.text_input("B站API网址", value = 'https://api.live.bilibili.com/msg/send')
@@ -145,7 +145,7 @@ if id_room and headers:
             code_return = response.status_code
             if code_return == 200:
                 time_show = correct_time(time_now)
-                st.write("发送成功" + str(time_now))
+                st.write("发送成功" + time_show)
             else:
                 st.write("发送失败")
             time_last = str(time_now)
